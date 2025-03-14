@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Photo Strip Download with html2canvas</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <style>
+    body {
+      margin: 0;
+      padding: 0;
+      background: #ffd9e8;
+      font-family: Arial, sans-serif;
+      text-align: center;
+    }
+    .photo-strip-preview {
+      position: relative;
+      margin: 30px auto;
+      width: 250px;
+      height: 400px;
+      background: #fff;
+      padding: 10px;
+      background-size: cover;
+      background-position: center;
+      background-repeat: no-repeat;
+      /* 此處可放入你的照片內容 */
+    }
+    .photo-strip-preview p {
+      margin: 0;
+      padding-top: 180px;
+      font-size: 1.2rem;
+      color: #333;
+    }
+    button {
+      margin: 20px;
+      padding: 10px 20px;
+      font-size: 1rem;
+      border: 2px solid #000;
+      border-radius: 10px;
+      background: #fff;
+      cursor: pointer;
+    }
+  </style>
+</head>
+<body>
+  <div class="photo-strip-preview" id="photoStripPreview">
+    <p>Your photo strip content here</p>
+  </div>
+  <button id="downloadBtn">Download Photo Strip</button>
+
+  <script>
+    const photoStripPreview = document.getElementById('photoStripPreview');
+    const downloadBtn = document.getElementById('downloadBtn');
+    downloadBtn.addEventListener('click', () => {
+      import('https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js')
+        .then(module => {
+          window.html2canvas = module.default || module;
+          return html2canvas(photoStripPreview);
+        })
+        .then(canvas => {
+          const link = document.createElement('a');
+          link.download = 'photostrip.png';
+          link.href = canvas.toDataURL('image/png');
+          link.click();
+        })
+        .catch(err => console.error("Failed to download photo strip", err));
+    });
+  </script>
+</body>
+</html>
