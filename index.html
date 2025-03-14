@@ -52,7 +52,6 @@
       position: absolute;
       bottom: 5px;
       right: 1%;
-      /* width: 50%; */
       height: 75%;
       display: none;
       pointer-events: none;
@@ -146,7 +145,7 @@
     </div>
 
     <!-- 拍照按鈕 -->
-    <button id="captureBtn">Start Capture :)</button>
+    <button id="captureBtn">Start Capture</button>
   </div>
 
   <script>
@@ -198,6 +197,7 @@
     navigator.mediaDevices.getUserMedia({ video: true })
       .then(stream => {
         video.srcObject = stream;
+        video.style.display = 'block'; // 確保 video 元素顯示
       })
       .catch(err => {
         console.error("Cannot access camera: ", err);
@@ -265,8 +265,6 @@
         const starHeight = starWidth * (starImg.height / starImg.width);
         ctx.drawImage(starImg, 0, 0, starWidth, starHeight);
     }
-
-
 
       // 轉成 Base64
       const dataURL = canvas.toDataURL('image/png');
