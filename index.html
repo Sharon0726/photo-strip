@@ -63,6 +63,7 @@
       background: #fff;
       border: 2px solid #000;
       transform: scaleX(-1);
+      object-fit: cover;
     }
 
     /* 疊加明星照：絕對定位在 video 上方 */
@@ -268,11 +269,6 @@
     // 拍照並顯示縮圖
     async function capturePhoto() {
 
-      // 建立 Canvas 拍照
-      const canvas = document.createElement('canvas');
-      canvas.width = 400;
-      canvas.height = 300;
-      const ctx = canvas.getContext('2d');
       // 計算攝影機畫面比例
       const videoAspectRatio = video.videoWidth / video.videoHeight;
       const targetAspectRatio = 400 / 300;
@@ -292,7 +288,13 @@
         sx = 0;
         sy = (video.videoHeight - sHeight) / 2;
       }
-      
+      video.
+      // 建立 Canvas 拍照
+      const canvas = document.createElement('canvas');
+      canvas.width = 400;
+      canvas.height = 300;
+      const ctx = canvas.getContext('2d');
+
       // 套用相同的 CSS 濾鏡在 canvas 繪製前
       ctx.filter = currentFilter;
 
