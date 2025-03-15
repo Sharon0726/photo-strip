@@ -72,6 +72,10 @@
     }
 
     .thumbnails {
+      position: relative;
+      /* 疊加明星照用 */
+      overflow: hidden;
+      /* 確保不會因為內容擴大 */
       display: grid;
       /* 兩欄 */
       grid-template-columns: repeat(2, auto);
@@ -87,6 +91,7 @@
       height: auto;
       border: 2px solid #000;
       background: #fff;
+      object-fit: cover;
     }
 
     .filters {
