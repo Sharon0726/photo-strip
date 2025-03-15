@@ -124,7 +124,7 @@
     <div class="preview-area">
       <!-- 攝影機預覽區 -->
       <div class="camera-wrapper">
-        <video id="video" autoplay muted></video>
+        <video id="video" autoplay muted playsinline></video>
         <div id="countdown" class="countdown">3</div>
         <!-- 疊加明星去背照 -->
         <img id="starOverlay" src="" alt="Star Overlay" />
@@ -154,12 +154,12 @@
     const captureBtn = document.getElementById('captureBtn');
     const thumbnails = document.getElementById('thumbnails');
     const filterButtons = document.querySelectorAll('.filter-btn');
-
+    
     // 合照按鈕與下拉式選單
     const coShotBtn = document.getElementById('coShotBtn');
     const starSelect = document.getElementById('starSelect');
     const starOverlay = document.getElementById('starOverlay');
-
+    
     let isStarSelectVisible = false; // 用來控制顯示/隱藏下拉選單
     let selectedStar = 'none';       // 當前選擇的明星
 
@@ -170,13 +170,13 @@
       'Star2': './stars/star2.png',
       'Star3': './stars/star3.png'
     };
-
+    
     // 切換顯示合照下拉選單
     coShotBtn.addEventListener('click', () => {
       isStarSelectVisible = !isStarSelectVisible;
       starSelect.style.display = isStarSelectVisible ? 'inline-block' : 'none';
     });
-
+    
     // 下拉選單改變時，更新明星照
     starSelect.addEventListener('change', (e) => {
       selectedStar = e.target.value;
@@ -188,21 +188,27 @@
       }
     });
 
+    // 取得攝影機影像
+    navigator.mediaDevices.getUserMedia({
+      video: {
+          facingMode: "user", // 選擇前置相機
+          width: { ideal: 1280 }, // 設定適當寬度
+          height: { ideal: 720 }  // 設定適當高度
+        }
+      })
+      .then(stream => {
+        video.srcObject = stream;
+      })
+      .catch(err => {
+        console.error("無法存取攝影機: ", err);
+    });
+    
     let currentFilter = 'none';
     let photoCount = 0;
     const maxPhotos = 4;
     const capturedPhotos = []; // 用於暫存 4 張 Base64 資料
-
-    // 取得攝影機影像
-    navigator.mediaDevices.getUserMedia({ video: true })
-      .then(stream => {
-        video.srcObject = stream;
-        video.style.display = 'block'; // 確保 video 元素顯示
-      })
-      .catch(err => {
-        console.error("Cannot access camera: ", err);
-      });
-
+    
+    
     // 切換濾鏡
     filterButtons.forEach(btn => {
       btn.addEventListener('click', () => {
@@ -216,6 +222,7 @@
 
     // 倒數拍照
     function startCountdown(seconds) {
+
       return new Promise(resolve => {
         let counter = seconds;
         countdownEl.style.display = 'block';
@@ -235,19 +242,19 @@
     // 拍照並顯示縮圖
     async function capturePhoto() {
       // 倒數 3 秒
-      await startCountdown(3);
-
+      
       // 建立 Canvas 拍照
       const canvas = document.createElement('canvas');
       canvas.width = video.videoWidth;
       canvas.height = video.videoHeight;
       const ctx = canvas.getContext('2d');
-
+      
       // 套用相同的 CSS 濾鏡在 canvas 繪製前
       ctx.filter = currentFilter;
       // 先把攝影機畫面繪製上去
       ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
-
+      
+      await startCountdown(3);
       // 如果有選擇明星 (不是 none)，疊加明星照片
       if (selectedStar !== 'none') {
         const starImg = new Image();
