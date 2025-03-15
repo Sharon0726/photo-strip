@@ -50,6 +50,7 @@
       /* 疊加明星照用 */
       overflow: hidden;
       /* 確保不會因為內容擴大 */
+    
     }
 
     video {
@@ -59,6 +60,7 @@
       border: 2px solid#000 ;
       transform: scaleX(-1);
       object-fit: cover;
+      max-width: 98%;
     }
 
     /* 疊加明星照：絕對定位在 video 上方 */
@@ -87,11 +89,12 @@
     }
 
     .thumbnails img {
-      max-width: 190px;
+      width: 190px;
       height: auto;
       border: 2px solid #000;
       background: #fff;
       object-fit: cover;
+      max-width: 90%;
     }
 
     .filters {
