@@ -192,8 +192,8 @@
     navigator.mediaDevices.getUserMedia({
       video: {
           facingMode: "user", // 選擇前置相機
-          width: { ideal: 1280 }, // 設定適當寬度
-          height: { ideal: 720 }  // 設定適當高度
+          width: { ideal: 400 }, // 設定適當寬度
+          height: { ideal: 300 }  // 設定適當高度
         }
       })
       .then(stream => {
@@ -241,7 +241,6 @@
 
     // 拍照並顯示縮圖
     async function capturePhoto() {
-      // 倒數 3 秒
       
       // 建立 Canvas 拍照
       const canvas = document.createElement('canvas');
@@ -251,10 +250,11 @@
       
       // 套用相同的 CSS 濾鏡在 canvas 繪製前
       ctx.filter = currentFilter;
+
+      // 倒數 3 秒
+      await startCountdown(3);
       // 先把攝影機畫面繪製上去
       ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
-      
-      await startCountdown(3);
       // 如果有選擇明星 (不是 none)，疊加明星照片
       if (selectedStar !== 'none') {
         const starImg = new Image();
