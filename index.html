@@ -72,15 +72,18 @@
     }
 
     .thumbnails {
-      display: flex;
-      flex-direction: column;
+      display: grid;
+      /* 兩欄 */
+      grid-template-columns: repeat(2, auto);
+      /* 兩行 */
+      grid-template-rows: repeat(2, auto);
       gap: 10px;
-      align-items: center;
+      justify-content: center;
       margin-top: 10px;
     }
 
     .thumbnails img {
-      width: 100px;
+      width: 192px;
       height: auto;
       border: 2px solid #000;
       background: #fff;
@@ -152,10 +155,10 @@
         <img id="starOverlay" src="" alt="Star Overlay" />
       </div>
 
-      <!-- 拍完的照片縮圖 -->
-      <div class="thumbnails" id="thumbnails"></div>
-    </div>
 
+    </div>
+    <!-- 拍完的照片縮圖 -->
+    <div class="thumbnails" id="thumbnails"></div>
     <!-- 濾鏡選擇按鈕 -->
     <div class="filters">
       <span>Choose a filter!</span><br />
@@ -214,8 +217,8 @@
     navigator.mediaDevices.getUserMedia({
       video: {
         facingMode: "user", // 選擇前置相機
-        width: { ideal: 1280 }, // 設定適當寬度
-        height: { ideal: 780 }  // 設定適當高度
+        width: { ideal: 400 }, // 設定適當寬度
+        height: { ideal: 300 }  // 設定適當高度
       }
     })
       .then(stream => {
