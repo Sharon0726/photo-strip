@@ -46,6 +46,7 @@
       height: 300px;
       background: #fff;
       border: 2px solid #000;
+      transform: scaleX(-1);
     }
     /* 疊加明星照：絕對定位在 video 上方 */
     #starOverlay {
@@ -136,7 +137,7 @@
 
     <!-- 濾鏡選擇按鈕 -->
     <div class="filters">
-      <span>Choose a filter before starting capture!</span><br />
+      <span>Choose a filter!</span><br />
       <button class="filter-btn active" data-filter="none">No Filter</button>
       <button class="filter-btn" data-filter="grayscale(100%)">Grayscale</button>
       <button class="filter-btn" data-filter="sepia(100%)">Sepia</button>
@@ -254,7 +255,14 @@
       // 倒數 3 秒
       await startCountdown(3);
       // 先把攝影機畫面繪製上去
+      ctx.save(); // 儲存當前畫布狀態
+
+      // 水平翻轉 (鏡像)
+      ctx.translate(400, 0);  // 移動畫布
+      ctx.scale(-1, 1);       // 反轉 X 軸
       ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+      ctx.restore(); // 恢復畫布狀態
+      
       // 如果有選擇明星 (不是 none)，疊加明星照片
       if (selectedStar !== 'none') {
         const starImg = new Image();
