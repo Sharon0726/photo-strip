@@ -1,46 +1,62 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
   <meta charset="UTF-8" />
   <title>Photo Booth - Index</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <style>
     body {
-      margin: 0; 
+      margin: 0;
       padding: 0;
       background: radial-gradient(circle, rgb(255 228 164) 5%, rgb(255 227 227) 40%, rgb(255 255 255)90%);
       font-family: Arial, sans-serif;
       text-align: center;
     }
+
     .container {
       margin: 20px auto;
       max-width: 800px;
     }
+
     h1 {
       margin: 20px 0;
     }
+
+    .countdown {
+      position: absolute;
+      top: 10px;
+      left: 10px;
+      background: rgba(255, 255, 255, 0.7);
+      padding: 10px 15px;
+      border-radius: 50%;
+      font-size: 1.5rem;
+      font-weight: bold;
+      display: none;
+      /* 預設不顯示，拍照時再顯示 */
+    }
+
     .preview-area {
       display: flex;
       justify-content: center;
       align-items: flex-start;
       gap: 20px;
       flex-wrap: wrap;
-      position: relative; /* 讓子元素可用絕對定位 */
+      position: relative;
+      /* 讓子元素可用絕對定位 */
+      width: 400px;
+      height: 300px;
     }
+
     .camera-wrapper {
-      position: relative; /* 疊加明星照用 */
+      position: relative;
+      /* 疊加明星照用 */
+      width: 400px;
+      height: 300px;
+      overflow: hidden;
+      /* 確保不會因為內容擴大 */
     }
-    .countdown {
-      position: absolute;
-      top: 10px;
-      left: 10px;
-      background: rgba(255,255,255,0.7);
-      padding: 10px 15px;
-      border-radius: 50%;
-      font-size: 1.5rem;
-      font-weight: bold;
-      display: none; /* 預設不顯示，拍照時再顯示 */
-    }
+
     video {
       width: 400px;
       height: 300px;
@@ -48,6 +64,7 @@
       border: 2px solid #000;
       transform: scaleX(-1);
     }
+
     /* 疊加明星照：絕對定位在 video 上方 */
     #starOverlay {
       position: absolute;
@@ -65,15 +82,18 @@
       align-items: center;
       margin-top: 10px;
     }
+
     .thumbnails img {
       width: 100px;
       height: auto;
       border: 2px solid #000;
       background: #fff;
     }
+
     .filters {
       margin: 20px 0;
     }
+
     .filters button {
       margin: 5px;
       padding: 8px 12px;
@@ -82,10 +102,12 @@
       background: #fff;
       cursor: pointer;
     }
+
     .filters button.active {
       background: #ffe1ee;
       font-weight: bold;
     }
+
     #captureBtn {
       margin-top: 10px;
       padding: 10px 20px;
@@ -95,10 +117,12 @@
       cursor: pointer;
       font-size: 1rem;
     }
+
     /* 合照區塊 */
     .coShot {
       margin: 10px 0;
     }
+
     select {
       padding: 5px 10px;
       border-radius: 5px;
@@ -107,6 +131,7 @@
     }
   </style>
 </head>
+
 <body>
   <div class="container">
     <h1>Photo Booth - Take Photos</h1>
@@ -155,12 +180,12 @@
     const captureBtn = document.getElementById('captureBtn');
     const thumbnails = document.getElementById('thumbnails');
     const filterButtons = document.querySelectorAll('.filter-btn');
-    
+
     // 合照按鈕與下拉式選單
     const coShotBtn = document.getElementById('coShotBtn');
     const starSelect = document.getElementById('starSelect');
     const starOverlay = document.getElementById('starOverlay');
-    
+
     let isStarSelectVisible = false; // 用來控制顯示/隱藏下拉選單
     let selectedStar = 'none';       // 當前選擇的明星
 
@@ -171,13 +196,13 @@
       'Star2': './stars/star2.png',
       'Star3': './stars/star3.png'
     };
-    
+
     // 切換顯示合照下拉選單
     coShotBtn.addEventListener('click', () => {
       isStarSelectVisible = !isStarSelectVisible;
       starSelect.style.display = isStarSelectVisible ? 'inline-block' : 'none';
     });
-    
+
     // 下拉選單改變時，更新明星照
     starSelect.addEventListener('change', (e) => {
       selectedStar = e.target.value;
@@ -192,24 +217,24 @@
     // 取得攝影機影像
     navigator.mediaDevices.getUserMedia({
       video: {
-          facingMode: "user", // 選擇前置相機
-          width: { ideal: 400 }, // 設定適當寬度
-          height: { ideal: 300 }  // 設定適當高度
-        }
-      })
+        facingMode: "user", // 選擇前置相機
+        width: { ideal: 400 }, // 設定適當寬度
+        height: { ideal: 300 }  // 設定適當高度
+      }
+    })
       .then(stream => {
         video.srcObject = stream;
       })
       .catch(err => {
         console.error("無法存取攝影機: ", err);
-    });
-    
+      });
+
     let currentFilter = 'none';
     let photoCount = 0;
     const maxPhotos = 4;
     const capturedPhotos = []; // 用於暫存 4 張 Base64 資料
-    
-    
+
+
     // 切換濾鏡
     filterButtons.forEach(btn => {
       btn.addEventListener('click', () => {
@@ -242,13 +267,13 @@
 
     // 拍照並顯示縮圖
     async function capturePhoto() {
-      
+
       // 建立 Canvas 拍照
       const canvas = document.createElement('canvas');
       canvas.width = video.videoWidth;
       canvas.height = video.videoHeight;
       const ctx = canvas.getContext('2d');
-      
+
       // 套用相同的 CSS 濾鏡在 canvas 繪製前
       ctx.filter = currentFilter;
 
@@ -262,7 +287,7 @@
       ctx.scale(-1, 1);       // 反轉 X 軸
       ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
       ctx.restore(); // 恢復畫布狀態
-      
+
       // 如果有選擇明星 (不是 none)，疊加明星照片
       if (selectedStar !== 'none') {
         const starImg = new Image();
@@ -270,16 +295,16 @@
         starImg.crossOrigin = "anonymous";
         starImg.src = starImages[selectedStar];
         await new Promise((resolve) => {
-            if (starImg.complete) {
+          if (starImg.complete) {
             resolve();
-            } else {
+          } else {
             starImg.onload = resolve;
-            }
+          }
         });
         const starWidth = 120;
         const starHeight = starWidth * (starImg.height / starImg.width);
         ctx.drawImage(starImg, 0, 0, starWidth, starHeight);
-    }
+      }
 
       // 轉成 Base64
       const dataURL = canvas.toDataURL('image/png');
@@ -306,4 +331,5 @@
     });
   </script>
 </body>
+
 </html>

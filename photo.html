@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
   <meta charset="UTF-8">
   <title>Photo Booth - Your Photo Strip</title>
@@ -7,22 +8,28 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <style>
     body {
-      margin: 0; 
+      margin: 0;
       padding: 0;
       background: radial-gradient(circle, rgb(255 228 164) 5%, rgb(255 227 227) 40%, rgb(255 255 255)90%);
       text-align: center;
     }
+
     .container {
       margin: 20px auto;
       max-width: 600px;
     }
+
     h1 {
       margin: 20px 0;
     }
-    .frame-colors, .stickers {
+
+    .frame-colors,
+    .stickers {
       margin: 10px 0;
     }
-    .frame-colors button, .stickers button {
+
+    .frame-colors button,
+    .stickers button {
       margin: 5px;
       padding: 8px 12px;
       border: 2px solid #000;
@@ -30,36 +37,52 @@
       background: #fff;
       cursor: pointer;
     }
+
     .photo-strip-preview {
       position: relative;
       margin: 30px auto;
       width: 250px;
+      /* 固定寬度 */
       height: 800px;
+      /* 固定高度 */
       background: #fff;
       padding: 20px 28px 70px 28px;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      /* 保持固定間距 */
+      align-items: center;
       background-size: cover;
       background-position: center;
       background-repeat: no-repeat;
     }
 
     .photo-strip-preview img {
-      display: block;
       width: 100%;
-      margin: 0 auto 15px auto;
+      /* 確保圖片滿版 */
+      height: auto;
+      flex-grow: 1;
+      /* 讓圖片佔滿可用空間 */
+      object-fit: cover;
+      /* 確保圖片填滿 */
     }
-    /* 貼紙示例，直接放在照片條右上(僅做範例) */
+
     .sticker {
       position: absolute;
       top: 5px;
       right: 5px;
       width: 50px;
-      display: none; /* 預設不顯示 */
+      display: none;
+      /* 預設不顯示 */
     }
+
     /* 底部按鈕區 */
     .actions {
       margin: 20px 0;
     }
-    .actions button, .actions input {
+
+    .actions button,
+    .actions input {
       margin: 5px;
       padding: 10px 15px;
       border: 2px solid #000;
@@ -68,11 +91,13 @@
       font-size: 1rem;
       cursor: pointer;
     }
+
     .actions input {
       width: 200px;
     }
   </style>
 </head>
+
 <body>
   <div class="container">
     <h1>Photo Strip Preview</h1>
@@ -148,11 +173,11 @@
     <div class="actions">
       <button id="downloadBtn">Download Photo Strip</button>
       <button id="retakeBtn">Take New Photos</button>
-      
+
     </div>
   </div>
 
-  
+
   <script>
     const photoStripPreview = document.getElementById('photoStripPreview');
     const girlypopSticker = document.getElementById('girlypopSticker');
@@ -164,7 +189,7 @@
     const customColorBtn = document.getElementById('customColorBtn');
     const customColorPicker = document.getElementById('customColorPicker');
     let isColorPickerVisible = false;
-    
+
     // 點擊「自訂顏色」按鈕，切換顯示 / 隱藏 color picker
     customColorBtn.addEventListener('click', () => {
       isColorPickerVisible = !isColorPickerVisible;
@@ -229,10 +254,10 @@
     });
 
     for (let i = 1; i <= 19; i++) {
-        let element = document.getElementById(i.toString());
-        if (element) {
-            element.style.display = 'none';
-        }
+      let element = document.getElementById(i.toString());
+      if (element) {
+        element.style.display = 'none';
+      }
     }
     // 貼紙選擇按鈕事件
     document.querySelectorAll('.stickers button').forEach(btn => {
@@ -254,22 +279,23 @@
 
     // 等待頁面載入後初始化
     window.onload = () => {
-        const downloadBtn = document.getElementById('downloadBtn');
-        const photoStripPreview = document.getElementById('photoStripPreview');
-        
-        downloadBtn.addEventListener('click', async () => {
-            try {
-                // 直接使用已經加載的 html2canvas
-                const canvas = await html2canvas(photoStripPreview);
-                const link = document.createElement('a');
-                link.download = 'photostrip.png';
-                link.href = canvas.toDataURL('image/png');
-                link.click();
-            } catch (err) {
-                console.error("Failed to download photo strip", err);
-            }
-        });
+      const downloadBtn = document.getElementById('downloadBtn');
+      const photoStripPreview = document.getElementById('photoStripPreview');
+
+      downloadBtn.addEventListener('click', async () => {
+        try {
+          // 直接使用已經加載的 html2canvas
+          const canvas = await html2canvas(photoStripPreview);
+          const link = document.createElement('a');
+          link.download = 'photostrip.png';
+          link.href = canvas.toDataURL('image/png');
+          link.click();
+        } catch (err) {
+          console.error("Failed to download photo strip", err);
+        }
+      });
     };
-</script>
+  </script>
 </body>
+
 </html>
