@@ -269,25 +269,6 @@
     // 拍照並顯示縮圖
     async function capturePhoto() {
 
-      // 計算攝影機畫面比例
-      const videoAspectRatio = video.videoWidth / video.videoHeight;
-      const targetAspectRatio = 400 / 300;
-
-      let sx, sy, sWidth, sHeight;
-
-      if (videoAspectRatio > targetAspectRatio) {
-        // 畫面較寬，裁切左右
-        sHeight = video.videoHeight;
-        sWidth = sHeight * targetAspectRatio;
-        sx = (video.videoWidth - sWidth) / 2;
-        sy = 0;
-      } else {
-        // 畫面較高，裁切上下
-        sWidth = video.videoWidth;
-        sHeight = sWidth / targetAspectRatio;
-        sx = 0;
-        sy = (video.videoHeight - sHeight) / 2;
-      }
       // 建立 Canvas 拍照
       const canvas = document.createElement('canvas');
       canvas.width = 400;
