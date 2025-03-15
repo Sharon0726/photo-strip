@@ -43,16 +43,11 @@
       gap: 20px;
       flex-wrap: wrap;
       position: relative;
-      /* 讓子元素可用絕對定位 */
-      width: 400px;
-      height: 300px;
     }
 
     .camera-wrapper {
       position: relative;
       /* 疊加明星照用 */
-      width: 400px;
-      height: 300px;
       overflow: hidden;
       /* 確保不會因為內容擴大 */
     }
@@ -219,8 +214,8 @@
     navigator.mediaDevices.getUserMedia({
       video: {
         facingMode: "user", // 選擇前置相機
-        width: { ideal: 400 }, // 設定適當寬度
-        height: { ideal: 300 }  // 設定適當高度
+        width: { ideal: 1280 }, // 設定適當寬度
+        height: { ideal: 780 }  // 設定適當高度
       }
     })
       .then(stream => {
