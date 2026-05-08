@@ -73,6 +73,19 @@
       /* 預設不顯示 */
     }
 
+    .fan-overlay {
+      position: absolute;
+      display: none;
+      width: 42%;
+      max-width: 120px;
+      min-width: 72px;
+      right: 10px;
+      bottom: 10px;
+      z-index: 1200;
+      pointer-events: none;
+      filter: drop-shadow(0 3px 4px rgb(0 0 0 / 20%));
+    }
+
     /* 底部按鈕區 */
     .actions {
       margin: 20px 0;
@@ -180,13 +193,15 @@
       <img src="./stickers/17.png" id="17" class="sticker" />
       <img src="./stickers/18.png" id="18" class="sticker" />
       <img src="./stickers/19.png" id="19" class="sticker" />
+      <img id="fanOverlay" class="fan-overlay" alt="idol overlay" />
       <!-- 四張照片 (JS 載入) -->
     </div>
 
     <div class="actions">
+      <button id="coupleBtn">合照（貼上/上傳）</button>
       <button id="downloadBtn">Download Photo Strip</button>
       <button id="retakeBtn">Take New Photos</button>
-
+      <input id="idolUploadInput" type="file" accept="image/*" style="display:none" />
     </div>
   </div>
 
@@ -201,6 +216,9 @@
     const sendEmailBtn = document.getElementById('sendEmailBtn');
     const customColorBtn = document.getElementById('customColorBtn');
     const customColorPicker = document.getElementById('customColorPicker');
+    const coupleBtn = document.getElementById('coupleBtn');
+    const idolUploadInput = document.getElementById('idolUploadInput');
+    const fanOverlay = document.getElementById('fanOverlay');
     let isColorPickerVisible = false;
 
     // 點擊「自訂顏色」按鈕，切換顯示 / 隱藏 color picker
@@ -256,6 +274,60 @@
         container.appendChild(starImg);
       }
       photoStripPreview.appendChild(container);
+    });
+
+    function setFanOverlayFromBlob(blob) {
+      if (!blob || !blob.type.startsWith('image/')) return;
+      const imageUrl = URL.createObjectURL(blob);
+      fanOverlay.src = imageUrl;
+      fanOverlay.style.display = 'block';
+    }
+
+    async function tryPasteFromClipboard() {
+      if (!navigator.clipboard || !navigator.clipboard.read) return false;
+      try {
+        const items = await navigator.clipboard.read();
+        for (const item of items) {
+          for (const type of item.types) {
+            if (type.startsWith('image/')) {
+              const blob = await item.getType(type);
+              setFanOverlayFromBlob(blob);
+              return true;
+            }
+          }
+        }
+      } catch (e) {
+        console.warn('Clipboard read not available', e);
+      }
+      return false;
+    }
+
+    coupleBtn.addEventListener('click', async () => {
+      const pasted = await tryPasteFromClipboard();
+      if (!pasted) {
+        idolUploadInput.click();
+      }
+    });
+
+    idolUploadInput.addEventListener('change', (e) => {
+      const file = e.target.files?.[0];
+      if (file) {
+        setFanOverlayFromBlob(file);
+      }
+      e.target.value = '';
+    });
+
+    window.addEventListener('paste', (e) => {
+      const items = e.clipboardData?.items || [];
+      for (const item of items) {
+        if (item.type.startsWith('image/')) {
+          const file = item.getAsFile();
+          if (file) {
+            setFanOverlayFromBlob(file);
+            break;
+          }
+        }
+      }
     });
 
     // 邊框顏色按鈕事件
