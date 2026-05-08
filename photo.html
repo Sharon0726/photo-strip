@@ -16,7 +16,9 @@
 
     .container {
       margin: 20px auto;
-      max-width: 95%;
+      width: min(95%, 1100px);
+      padding: 0 12px 24px;
+      box-sizing: border-box;
     }
 
     h1 {
@@ -41,16 +43,14 @@
     .photo-strip-preview {
       position: relative;
       margin: 30px auto;
-      width: 250px;
-      /* 固定寬度 */
-      height: 800px;
-      /* 固定高度 */
+      width: min(250px, 86vw);
+      min-height: 70vh;
       background: #fff;
-      padding: 20px 28px 70px 28px;
+      padding: 20px 28px 40px 28px;
       display: flex;
       flex-direction: column;
-      justify-content: space-between;
-      /* 保持固定間距 */
+      justify-content: flex-start;
+      gap: 10px;
       align-items: center;
       background-size: cover;
       background-position: center;
@@ -59,12 +59,9 @@
 
     .photo-strip-preview img {
       width: 100%;
-      /* 確保圖片滿版 */
       height: auto;
-      flex-grow: 1;
-      /* 讓圖片佔滿可用空間 */
       object-fit: cover;
-      /* 確保圖片填滿 */
+      display: block;
     }
 
     .sticker {
@@ -94,6 +91,22 @@
 
     .actions input {
       width: 200px;
+    }
+
+    @media (max-width: 640px) {
+      h1 {
+        font-size: 1.35rem;
+      }
+
+      .frame-colors button,
+      .stickers button,
+      .actions button {
+        width: min(100%, 320px);
+      }
+
+      .photo-strip-preview {
+        padding: 16px 16px 28px;
+      }
     }
   </style>
 </head>
