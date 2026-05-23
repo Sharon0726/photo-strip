@@ -201,6 +201,8 @@
       <button id="coupleBtn">合照（貼上/上傳）</button>
       <button id="downloadBtn">Download Photo Strip</button>
       <button id="retakeBtn">Take New Photos</button>
+      <button onclick="testBackend()">測試 AI Backend</button>
+      <pre id="backendResult"></pre>
       <input id="idolUploadInput" type="file" accept="image/*" style="display:none" />
     </div>
   </div>
@@ -380,6 +382,32 @@
         }
       });
     };
+  </script>
+  <script>
+    async function testBackend() {
+      const resultBox = document.getElementById("backendResult");
+
+      resultBox.textContent = "正在呼叫 AI backend...";
+
+      try {
+        const response = await fetch("https://ai-photo-backend-ubri.onrender.com/generate-photo", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json"
+          },
+          body: JSON.stringify({
+            name: "Sharon",
+            style: "celebrity"
+          })
+        });
+
+        const data = await response.json();
+
+        resultBox.textContent = JSON.stringify(data, null, 2);
+      } catch (error) {
+        resultBox.textContent = "呼叫 backend 失敗：" + error.message;
+      }
+    }
   </script>
 </body>
 
