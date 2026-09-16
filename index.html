@@ -68,12 +68,13 @@
       max-width: 98%;
     }
 
-    /* 疊加明星照：絕對定位在 video 上方 */
+    /* 疊加合照 PNG：絕對定位在 video 上方 */
     #starOverlay {
       position: absolute;
       bottom: 5px;
       right: 1%;
-      height: 75%;
+      width: 150px;
+      height: auto;
       display: none;
       pointer-events: none;
     }
@@ -135,10 +136,64 @@
       margin: 10px 0;
     }
 
-    select {
-      padding: 5px 10px;
-      border-radius: 5px;
-      border: 1px solid #000;
+    #overlayControls {
+      display: inline-flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 10px;
+      margin-top: 10px;
+      padding: 10px;
+      border: 2px dashed #000;
+      border-radius: 10px;
+      background: rgba(255, 255, 255, 0.6);
+    }
+
+    .size-slider-wrap {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .size-slider-wrap input[type="range"] {
+      width: 160px;
+      accent-color: #ff8fb1;
+    }
+
+    .position-buttons {
+      display: grid;
+      grid-template-columns: repeat(2, auto);
+      gap: 6px;
+    }
+
+    .position-buttons button {
+      padding: 6px 10px;
+      border: 2px solid #000;
+      border-radius: 12px;
+      background: #fff;
+      cursor: pointer;
+      font-size: 0.9rem;
+    }
+
+    .position-buttons button.active {
+      background: #ffe1ee;
+      font-weight: bold;
+    }
+
+    .capture-controls {
+      display: flex;
+      justify-content: center;
+      gap: 10px;
+      margin-top: 10px;
+      flex-wrap: wrap;
+    }
+
+    #retakeBtn,
+    #nextBtn {
+      padding: 10px 20px;
+      border: 2px solid #000;
+      border-radius: 20px;
+      background: #fff;
+      cursor: pointer;
       font-size: 1rem;
     }
 
@@ -153,8 +208,9 @@
 
       .filters button,
       #captureBtn,
-      #coShotBtn,
-      select {
+      #retakeBtn,
+      #nextBtn,
+      #coShotBtn {
         width: min(100%, 320px);
       }
     }
@@ -168,12 +224,22 @@
     <!-- 合照選擇 -->
     <div class="coShot">
       <button id="coShotBtn">合照</button>
-      <select id="starSelect" style="display:none;">
-        <option value="none">無明星</option>
-        <option value="Star1">Star1</option>
-        <option value="Star2">Star2</option>
-        <option value="Star3">Star3</option>
-      </select>
+      <input type="file" id="overlayUpload" accept="image/png" style="display:none;" />
+
+      <div id="overlayControls" style="display:none;">
+        <div class="size-slider-wrap">
+          <span>小</span>
+          <input type="range" id="overlaySizeSlider" min="60" max="300" value="150" />
+          <span>大</span>
+        </div>
+        <div class="position-buttons">
+          <button type="button" class="pos-btn" data-pos="top-left">左上</button>
+          <button type="button" class="pos-btn" data-pos="top-right">右上</button>
+          <button type="button" class="pos-btn" data-pos="bottom-left">左下</button>
+          <button type="button" class="pos-btn active" data-pos="bottom-right">右下</button>
+        </div>
+        <button type="button" id="removeOverlayBtn">移除合照圖片</button>
+      </div>
     </div>
 
     <div class="preview-area">
@@ -200,48 +266,104 @@
     </div>
 
     <!-- 拍照按鈕 -->
-    <button id="captureBtn">Start Capture</button>
+    <div class="capture-controls">
+      <button id="captureBtn">Start Capture</button>
+      <button id="retakeBtn" style="display:none;">重拍</button>
+      <button id="nextBtn" style="display:none;">下一張</button>
+    </div>
   </div>
 
   <script>
     const video = document.getElementById('video');
     const countdownEl = document.getElementById('countdown');
     const captureBtn = document.getElementById('captureBtn');
+    const retakeBtn = document.getElementById('retakeBtn');
+    const nextBtn = document.getElementById('nextBtn');
     const thumbnails = document.getElementById('thumbnails');
     const filterButtons = document.querySelectorAll('.filter-btn');
 
-    // 合照按鈕與下拉式選單
+    // 合照（上傳去背 PNG）
     const coShotBtn = document.getElementById('coShotBtn');
-    const starSelect = document.getElementById('starSelect');
+    const overlayUpload = document.getElementById('overlayUpload');
+    const overlayControls = document.getElementById('overlayControls');
+    const overlaySizeSlider = document.getElementById('overlaySizeSlider');
+    const posButtons = document.querySelectorAll('.pos-btn');
+    const removeOverlayBtn = document.getElementById('removeOverlayBtn');
     const starOverlay = document.getElementById('starOverlay');
 
-    let isStarSelectVisible = false; // 用來控制顯示/隱藏下拉選單
-    let selectedStar = 'none';       // 當前選擇的明星
+    let overlayImageLoaded = false; // 是否已上傳合照圖片
+    let overlaySize = parseInt(overlaySizeSlider.value, 10); // 疊加圖片寬度 (px)
+    let overlayPosition = 'bottom-right'; // 疊加圖片位置：top-left / top-right / bottom-left / bottom-right
+    const overlayMarginX = 5; // 對應 CSS 中 right: 1% 的近似邊距
+    const overlayMarginY = 5; // 對應 CSS 中 bottom: 5px
 
-    // 存放明星對應圖片路徑 (透明背景 PNG)
-    const starImages = {
-      'none': '',
-      'Star1': './stars/star1.png',
-      'Star2': './stars/star2.png',
-      'Star3': './stars/star3.png'
-    };
-
-    // 切換顯示合照下拉選單
+    // 點擊「合照」開啟檔案選擇視窗，讓使用者上傳去背過的 PNG
     coShotBtn.addEventListener('click', () => {
-      isStarSelectVisible = !isStarSelectVisible;
-      starSelect.style.display = isStarSelectVisible ? 'inline-block' : 'none';
+      overlayUpload.click();
     });
 
-    // 下拉選單改變時，更新明星照
-    starSelect.addEventListener('change', (e) => {
-      selectedStar = e.target.value;
-      if (selectedStar == 'none') {
-        starOverlay.style.display = 'none';
-      } else {
-        starOverlay.src = starImages[selectedStar];
+    overlayUpload.addEventListener('change', (e) => {
+      const file = e.target.files[0];
+      if (!file) return;
+      const reader = new FileReader();
+      reader.onload = (evt) => {
+        starOverlay.src = evt.target.result;
         starOverlay.style.display = 'block';
-      }
+        overlayImageLoaded = true;
+        overlayControls.style.display = 'flex';
+        applyOverlayStyle();
+      };
+      reader.readAsDataURL(file);
     });
+
+    // 拖拉圓點（range slider）調整合照圖片大小
+    overlaySizeSlider.addEventListener('input', (e) => {
+      overlaySize = parseInt(e.target.value, 10);
+      applyOverlayStyle();
+    });
+
+    // 四個角落按鈕調整合照圖片位置
+    posButtons.forEach(btn => {
+      btn.addEventListener('click', () => {
+        posButtons.forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        overlayPosition = btn.getAttribute('data-pos');
+        applyOverlayStyle();
+      });
+    });
+
+    // 移除已上傳的合照圖片
+    removeOverlayBtn.addEventListener('click', () => {
+      overlayImageLoaded = false;
+      starOverlay.src = '';
+      starOverlay.style.display = 'none';
+      overlayControls.style.display = 'none';
+      overlayUpload.value = '';
+    });
+
+    // 依照目前的大小與位置設定，更新預覽區中疊加圖片的樣式
+    function applyOverlayStyle() {
+      starOverlay.style.height = 'auto';
+      starOverlay.style.width = overlaySize + 'px';
+      starOverlay.style.top = 'auto';
+      starOverlay.style.bottom = 'auto';
+      starOverlay.style.left = 'auto';
+      starOverlay.style.right = 'auto';
+
+      if (overlayPosition === 'top-left') {
+        starOverlay.style.top = overlayMarginY + 'px';
+        starOverlay.style.left = overlayMarginX + 'px';
+      } else if (overlayPosition === 'top-right') {
+        starOverlay.style.top = overlayMarginY + 'px';
+        starOverlay.style.right = overlayMarginX + 'px';
+      } else if (overlayPosition === 'bottom-left') {
+        starOverlay.style.bottom = overlayMarginY + 'px';
+        starOverlay.style.left = overlayMarginX + 'px';
+      } else {
+        starOverlay.style.bottom = overlayMarginY + 'px';
+        starOverlay.style.right = overlayMarginX + 'px';
+      }
+    }
 
     // 取得攝影機影像
     navigator.mediaDevices.getUserMedia({
@@ -317,22 +439,35 @@
       ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
       ctx.restore(); // 恢復畫布狀態
 
-      // 如果有選擇明星 (不是 none)，疊加明星照片
-      if (selectedStar !== 'none') {
-        const starImg = new Image();
-        // 新增 crossOrigin 屬性，讓圖片能夠以匿名模式載入
-        starImg.crossOrigin = "anonymous";
-        starImg.src = starImages[selectedStar];
+      // 如果有上傳合照 PNG，依目前的大小與位置疊加上去
+      if (overlayImageLoaded && starOverlay.src) {
+        const overlayImg = new Image();
+        overlayImg.crossOrigin = "anonymous";
+        overlayImg.src = starOverlay.src;
         await new Promise((resolve) => {
-          if (starImg.complete) {
+          if (overlayImg.complete) {
             resolve();
           } else {
-            starImg.onload = resolve;
+            overlayImg.onload = resolve;
           }
         });
-        const starWidth = 120;
-        const starHeight = starWidth * (starImg.height / starImg.width);
-        ctx.drawImage(starImg, 0, 0, starWidth, starHeight);
+        const overlayWidth = overlaySize;
+        const overlayHeight = overlayWidth * (overlayImg.height / overlayImg.width);
+        let x, y;
+        if (overlayPosition === 'top-left') {
+          x = overlayMarginX;
+          y = overlayMarginY;
+        } else if (overlayPosition === 'top-right') {
+          x = canvas.width - overlayWidth - overlayMarginX;
+          y = overlayMarginY;
+        } else if (overlayPosition === 'bottom-left') {
+          x = overlayMarginX;
+          y = canvas.height - overlayHeight - overlayMarginY;
+        } else {
+          x = canvas.width - overlayWidth - overlayMarginX;
+          y = canvas.height - overlayHeight - overlayMarginY;
+        }
+        ctx.drawImage(overlayImg, x, y, overlayWidth, overlayHeight);
       }
 
       // 轉成 Base64
@@ -345,17 +480,38 @@
       thumbnails.appendChild(img);
 
       photoCount++;
-      if (photoCount >= maxPhotos) {
-        // 儲存到 localStorage
-        localStorage.setItem('photoStrip', JSON.stringify(capturedPhotos));
-        // 跳轉到 photo.html
-        window.location.href = 'photo.html';
-      }
     }
 
-    captureBtn.addEventListener('click', () => {
-      if (photoCount < maxPhotos) {
-        capturePhoto();
+    // 按下拍照：只拍 1 張，拍完後顯示「重拍」與「下一張／完成」按鈕
+    captureBtn.addEventListener('click', async () => {
+      captureBtn.style.display = 'none';
+      await capturePhoto();
+      retakeBtn.style.display = 'inline-block';
+      nextBtn.style.display = 'inline-block';
+      nextBtn.textContent = (photoCount >= maxPhotos) ? '完成' : '下一張';
+    });
+
+    // 重拍：只重拍剛剛那一張，移除最後一張暫存照片與縮圖
+    retakeBtn.addEventListener('click', () => {
+      if (photoCount > 0) {
+        capturedPhotos.pop();
+        thumbnails.removeChild(thumbnails.lastChild);
+        photoCount--;
+      }
+      retakeBtn.style.display = 'none';
+      nextBtn.style.display = 'none';
+      captureBtn.style.display = 'inline-block';
+    });
+
+    // 下一張／完成：未滿 4 張則繼續拍下一張，滿 4 張則儲存並跳轉到 photo.html
+    nextBtn.addEventListener('click', () => {
+      if (photoCount >= maxPhotos) {
+        localStorage.setItem('photoStrip', JSON.stringify(capturedPhotos));
+        window.location.href = 'photo.html';
+      } else {
+        retakeBtn.style.display = 'none';
+        nextBtn.style.display = 'none';
+        captureBtn.style.display = 'inline-block';
       }
     });
   </script>
